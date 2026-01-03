@@ -1,11 +1,17 @@
 import { openai } from '@ai-sdk/openai';
 import { generateText, stepCountIs, type ModelMessage } from 'ai';
+import { getTracer, Laminar } from '@lmnr-ai/lmnr';
+
 import { SYSTEM_PROMPT } from './system/prompt.ts';
 import type { AgentCallbacks } from '../types.ts';
 import { tools } from './tools/index.ts';
 import { executeTool } from './executeTool.ts';
 
 const MODEL_NAME = 'gpt-5-mini';
+
+Laminar.initialize({
+  projectApiKey: process.env.LMNR_PROJECT_API_KEY,
+});
 
 export const runAgent = async (
   userMessage: string,
@@ -18,6 +24,10 @@ export const runAgent = async (
     system: SYSTEM_PROMPT,
     tools,
     stopWhen: stepCountIs(1),
+    experimental_telemetry: {
+      isEnabled: true,
+      tracer: getTracer(),
+    },
   });
 
   toolCalls.forEach(async (toolCall) => {
