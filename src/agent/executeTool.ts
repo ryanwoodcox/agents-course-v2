@@ -1,25 +1,28 @@
-import { tools } from './tools/index.ts';
+import { tools } from "./tools/index.ts";
 
 export type ToolName = keyof typeof tools;
 
 export const executeTool = async (
-  name: ToolName,
-  args: Record<string, unknown>
+	name: string,
+	args: Record<string, unknown>,
 ) => {
-  const tool = tools[name];
+	const tool = tools[name as ToolName];
 
-  if (!tool) {
-    throw new Error(
-      `Sorry, this tool isn't ready yet, use something else or better yet, let the user know and ask them what you should do next.`
-    );
-  }
+	if (!tool) {
+		return `Unknown tool: ${name}`;
+	}
 
-  const execute = tool.execute!;
+	const execute = tool.execute;
 
-  const result = await execute(args as any, {
-    toolCallId: '',
-    messages: [],
-  });
+	if (!execute) {
+		// Provider tools (like webSearch) are executed by OpenAI, not us
+		return `Provider tool ${name} - executed by model provider`;
+	}
 
-  return String(result);
+	const result = await execute(args as any, {
+		toolCallId: "",
+		messages: [],
+	});
+
+	return String(result);
 };
