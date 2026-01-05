@@ -1,42 +1,42 @@
-import { openai } from '@ai-sdk/openai';
-import { generateText, stepCountIs, type ModelMessage } from 'ai';
-import { getTracer, Laminar } from '@lmnr-ai/lmnr';
+import { openai } from "@ai-sdk/openai";
+import { generateText, stepCountIs, type ModelMessage } from "ai";
+import { getTracer, Laminar } from "@lmnr-ai/lmnr";
 
-import { SYSTEM_PROMPT } from './system/prompt.ts';
-import type { AgentCallbacks } from '../types.ts';
-import { tools } from './tools/index.ts';
-import { executeTool } from './executeTool.ts';
+import { SYSTEM_PROMPT } from "./system/prompt.ts";
+import type { AgentCallbacks } from "../types.ts";
+import { tools } from "./tools/index.ts";
+import { executeTool } from "./executeTool.ts";
 
-const MODEL_NAME = 'gpt-5-mini';
+const MODEL_NAME = "gpt-5-mini";
 
 Laminar.initialize({
-  projectApiKey: process.env.LMNR_PROJECT_API_KEY,
+	projectApiKey: process.env.LMNR_PROJECT_API_KEY,
 });
 
 export const runAgent = async (
-  userMessage: string,
-  conversationHistory: ModelMessage[],
-  callbacks: AgentCallbacks
+	userMessage: string,
+	conversationHistory: ModelMessage[],
+	callbacks: AgentCallbacks,
 ) => {
-  const { text, toolCalls } = await generateText({
-    model: openai(MODEL_NAME),
-    prompt: userMessage,
-    system: SYSTEM_PROMPT,
-    tools,
-    stopWhen: stepCountIs(1),
-    experimental_telemetry: {
-      isEnabled: true,
-      tracer: getTracer(),
-    },
-  });
+	const { text, toolCalls } = await generateText({
+		model: openai(MODEL_NAME),
+		prompt: userMessage,
+		system: SYSTEM_PROMPT,
+		tools,
+		stopWhen: stepCountIs(1),
+		experimental_telemetry: {
+			isEnabled: true,
+			tracer: getTracer(),
+		},
+	});
 
-  toolCalls.forEach(async (toolCall) => {
-    const result = await executeTool(
-      toolCall.toolName as any,
-      toolCall.input as any
-    );
-    console.log(result);
-  });
+	toolCalls.forEach(async (toolCall) => {
+		const result = await executeTool(
+			toolCall.toolName as any,
+			toolCall.input as any,
+		);
+		console.log(result);
+	});
 
-  console.log(text);
+	console.log(text);
 };
